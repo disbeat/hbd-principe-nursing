@@ -5,8 +5,6 @@ from .models import Patient, Visit, Diagnosys, Treatment, Department, PatientTyp
 class MedicineStockChangeInline(admin.TabularInline):
     model = MedicineStockChange
 
-class VisitInline(admin.StackedInline):
-    model = Visit
 
 @register(Visit)
 class VisitAdmin(admin.ModelAdmin):
@@ -20,7 +18,6 @@ class VisitAdmin(admin.ModelAdmin):
 class PatientAdmin(admin.ModelAdmin):
     date_hierarchy = 'when'
     list_display = ('name', 'birthdate', 'patient_type')
-    inlines = [VisitInline,]
 
 @register(Medicine)
 class MedicineAdmin(admin.ModelAdmin):

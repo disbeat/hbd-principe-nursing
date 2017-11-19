@@ -2,6 +2,7 @@ from __future__ import unicode_literals
 from datetime import datetime
 
 from django.db import models
+from django.contrib.auth.models import User
 
 CHARFIELDS_LEN = 1024
 
@@ -14,21 +15,6 @@ class PatientType(models.Model):
     def __unicode__(self):
 		return self.name
 
-class Patient(models.Model):
-    ''' Patient information, mostly immutable '''
-
-    name            = models.CharField(max_length=CHARFIELDS_LEN)
-    birthdate       = models.DateField(verbose_name='Birth Date', null=True, blank=True)
-    patient_type    = models.ForeignKey(PatientType, related_name='patients', null=True)
-    address         = models.CharField(null=True, blank=True, max_length=CHARFIELDS_LEN)
-    contact         = models.CharField(null=True, blank=True, max_length=CHARFIELDS_LEN)
-    pmh             = models.TextField(null=True, blank=True, verbose_name='Personal Medical History')
-    alergies        = models.TextField(null=True, blank=True)
-    when            = models.DateTimeField(default=datetime.now, null=True, blank=True, verbose_name='Registration Datetime')
-    info            = models.TextField(null=True, blank=True, verbose_name='Additional Information')
-
-    def __unicode__(self):
-		return str(self.id) + ': ' + self.name
 
 class Diagnosys(models.Model):
     ''' Diagnosis list '''
@@ -87,6 +73,24 @@ class Medicine(models.Model):
 		return self.code + ' - ' + self.name
 
 
+class Patient(models.Model):
+    ''' Patient information, mostly immutable '''
+
+    name            = models.CharField(max_length=CHARFIELDS_LEN)
+    birthdate       = models.DateField(verbose_name='Birth Date', null=True, blank=True)
+    patient_type    = models.ForeignKey(PatientType, related_name='patients', null=True)
+    department      = models.ForeignKey(Department, related_name='patients', null=True)
+    address         = models.CharField(null=True, blank=True, max_length=CHARFIELDS_LEN)
+    contact         = models.CharField(null=True, blank=True, max_length=CHARFIELDS_LEN)
+    pmh             = models.TextField(null=True, blank=True, verbose_name='Personal Medical History')
+    alergies        = models.TextField(null=True, blank=True)
+    when            = models.DateTimeField(default=datetime.now, null=True, blank=True, verbose_name='Registration Datetime')
+    info            = models.TextField(null=True, blank=True, verbose_name='Additional Information')
+
+    def __unicode__(self):
+		return str(self.id) + ': ' + self.name
+
+
 
 class Visit(models.Model):
     ''' Visit data, each time a patient goes to the clinic '''
@@ -99,8 +103,9 @@ class Visit(models.Model):
     symptoms        = models.TextField(null=True, blank=True, verbose_name="Signs and Symptoms")
     diagnosys       = models.ManyToManyField(to=Diagnosys, blank=True)
     treatments      = models.ManyToManyField(to=Treatment, blank=True)
-    medicines           = models.ManyToManyField(Medicine, through='MedicineStockChange')
+    medicines       = models.ManyToManyField(Medicine, through='MedicineStockChange')
     info            = models.TextField(null=True, blank=True, verbose_name='Additional Information')
+    nurse           = models.ForeignKey(User, related_name='visits')
 
     def __unicode__(self):
 		return str(self.id) + ': ' + self.patient.name + ' @ '+ str(self.when)
